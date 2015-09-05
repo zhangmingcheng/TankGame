@@ -2,15 +2,19 @@
  * 1.画出坦克
  * 2.实现我的坦克的上下移动 
  * 3.实现我的坦克发射子弹(最多连续发射五颗)
+ * 4.击中坦克产生爆炸效果 
  */
 package zmc;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -51,7 +55,10 @@ class MyJPanel extends JPanel implements KeyListener,Runnable{
 	//定义敌方坦克
 	private Vector<EnemyTank> ets = new Vector<EnemyTank>();
 	private int intSize = 3;
-	//定义子弹
+	//定义三张图片，三张图片才能组成一颗炸弹（爆炸效果）
+	Image image1=null;
+	Image image2=null;
+	Image image3=null;
 	
 	public MyJPanel(){
 		myTank = new MyTank(180,250);
@@ -63,6 +70,16 @@ class MyJPanel extends JPanel implements KeyListener,Runnable{
 			et.setDirect(3);
 			ets.add(et);
 		}
+		
+		//初始化三张图片
+				try {
+					image1=ImageIO.read(new File("1.png"));
+					image2=ImageIO.read(new File("1.png"));
+					image3=ImageIO.read(new File("1.png"));
+				} catch (Exception e) {
+					e.printStackTrace();
+					// TODO: handle exception
+				}		
 	}
 	
 	public void run(){
@@ -72,6 +89,17 @@ class MyJPanel extends JPanel implements KeyListener,Runnable{
 			Thread.sleep(100);}
 			catch(Exception e){
 				e.printStackTrace();
+			}
+			for(int i=0;i<this.myTank.shots.size();i++){
+				Shot temp_shot = this.myTank.shots.get(i);
+				  if(temp_shot.isLive){
+				   for(int j=0;j<this.ets.size();j++){
+					   EnemyTank  temp_tank = this.ets.get(j);
+					   if(temp_tank.isLive){
+					     hitTank(temp_shot,temp_tank); 
+					   }
+				   }
+				  }
 			}
 			repaint();
 		}
@@ -86,6 +114,7 @@ class MyJPanel extends JPanel implements KeyListener,Runnable{
         drawTank(g,myTank.getX(),myTank.getY(),myTank.getcolor(),myTank.getDirect());
         //画出敌方的坦克
         for(EnemyTank et:ets){
+        	if(et.isLive)
         	  drawTank(g,et.getX(),et.getY(),et.getcolor(),et.getDirect());
         }
         //画子弹
@@ -95,11 +124,36 @@ class MyJPanel extends JPanel implements KeyListener,Runnable{
         		g.setColor(Color.ORANGE);
         		g.fill3DRect(Temp_Shot .getX(),Temp_Shot .getY(),2, 2, false);
         	}
-        	if(Temp_Shot.isLive==false)
+        	if(Temp_Shot.isLive==false){
                 this.myTank.shots.remove(Temp_Shot);
+        	}
         }
 	}
+	//判断子弹是否击中敌人坦克
+	public void hitTank(Shot s ,EnemyTank et){
+		
+		int X = s.getX();
+		int Y = s.getY();
+		
+		switch(et.getDirect()){
+		case 0:
+		case 3: if((X>=et.getX()&&X<=et.getX()+20)&&(Y>=et.getY()&&Y<=et.getY()+30)){
+			                   //击中
+			                 s.isLive = false;
+			                 et.isLive =false;
+						}
+		                 break;
+		case 1:
+		case 2: if((X>=et.getX()&&X<=et.getX()+30)&&(Y>=et.getY()&&Y<=et.getY()+20)){
+			                s.isLive = false;
+			                et.isLive = false;
+		}
+		    break;
+		}
+		
+	}
 	
+	//画出坦克
 	public void drawTank(Graphics g , int x, int y, int color , int direct){
 		
 		//坦克的颜色,1代表我的坦克的颜色，0代表敌方坦克的颜色

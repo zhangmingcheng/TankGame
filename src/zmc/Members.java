@@ -77,7 +77,7 @@ class Tank{
 class Shot implements Runnable{
 	private int x,y;//子弹的横纵坐标
 	private int direct ;
-	private int speed = 1;
+	private int speed = 2;
     boolean isLive = true;
 	public Shot(int x, int y,int direct ){
 		this.x = x;
@@ -87,29 +87,29 @@ class Shot implements Runnable{
 	
 	public void run(){
 		while(true){
-			try{Thread.sleep(30);}
+			try{Thread.sleep(50);}
 			catch(Exception e){
 				e.printStackTrace();
 			}
 			switch(this.direct){
 			case 0: 
 				this.y-=speed;
-				if(this.y<=0) this.isLive= false;
 				break;
 			case 1: 
 				this.x-=speed;
-				if(this.x<=0) this.isLive = false;
 				break;
 			case 2:
 				this.x+=speed;
-				if(this.x>=400) this.isLive = false;
 				break;
 			case 3:	
 			this.y+=speed;
-			if(this.y>=300) this.isLive= false;
 			break;
 			}
-			if(this.isLive==false) break;
+			if(x<0||x>400||y<0||y>300)
+			{
+				this.isLive=false;
+				break;
+			}
 		}
 	}
 	
@@ -142,6 +142,8 @@ class Shot implements Runnable{
 //-------------敌方坦克-----------------//
 class EnemyTank extends Tank{
 	
+	boolean isLive = true;
+	
 	public EnemyTank(int x, int y){
 		super(x,y);
 	}
@@ -149,11 +151,13 @@ class EnemyTank extends Tank{
 //-------------我的坦克-----------------//
 class MyTank extends Tank{
 	
-   Shot myShot = null;
+    Shot myShot = null;
     Vector<Shot>  shots = new Vector<Shot>();
+    
 	public MyTank(int x,int y){
 		super(x,y);
 	}
+	
 	public void ShotEnemy(){
 	
 		int X = this.getX();
@@ -178,6 +182,7 @@ class MyTank extends Tank{
 		}
 		Thread thread = new Thread(myShot);
 		thread.start();
+		
 	}
 	
 }
